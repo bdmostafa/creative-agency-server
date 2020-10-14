@@ -30,8 +30,7 @@ client.connect(err => {
     const reviewsCollection = client.db(process.env.DB_NAME).collection(process.env.DB_COLLECTION_REVIEWS);
     const adminsCollection = client.db(process.env.DB_NAME).collection(process.env.DB_COLLECTION_ADMINS);
 
-    // This API is used for adding new service by admins
-    app.post('/addService', (req, res) => {
+    const loadRequestedData = (req) => {
         const file = req.files.file;
         const newImg = file.data;
         const encodedImg = newImg.toString('base64');
@@ -43,14 +42,23 @@ client.connect(err => {
         };
 
         const totalData = JSON.parse(req.body.total)
-        totalData.image = image;
+        totalData.img = image;
 
-        servicesCollection.insertOne(totalData)
+        return totalData;
+    }
+
+    // API for adding new service by admins
+    app.post('/addService', (req, res) => {
+
+        const newService = loadRequestedData(req);
+
+        servicesCollection.insertOne(newService)
             .then(result => {
                 res.send(result.insertedCount > 0);
             })
     })
 
+    // API for getting all available services
     app.get('/services', (req, res) => {
         servicesCollection.find({})
             .toArray((err, services) => {
@@ -59,7 +67,16 @@ client.connect(err => {
             })
     })
 
+    // This API is used for placing order a service by users
+    app.post('/placeOrder', (req, res) => {
 
+        const orderedService = loadRequestedData(req);
+        console.log(orderedService)
+        ordersCollection.insertOne(orderedService)
+            .then(result => {
+                res.send(result.insertedCount > 0);
+            })
+    })
 
 
 
