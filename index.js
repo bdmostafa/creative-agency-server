@@ -79,26 +79,24 @@ client.connect(err => {
     })
 
     // API for getting services list by email
-    app.post('/ordersByEmail', (req, res) => {
-        // const date = req.body.date;
+    app.post('/ordersListByEmail', (req, res) => {
         const email = req.body.email;
 
         adminsCollection.find({ email })
             .toArray((err, admins) => {
-                // const filter = { date }
                 if (admins.length === 0) {
                     // If admin email is not found,
                     // find the orderscollections matching only loggedInUser email
                     ordersCollection.find({ email })
                         .toArray((err, myOrders) => {
-                            console.log('user', myOrders)
+                            // console.log('user', myOrders)
                             res.send(myOrders)
                         })
                 }
                 // If admin email is found, load all orders collection
                 ordersCollection.find({})
                     .toArray((err, allOrders) => {
-                        console.log('admin', allOrders)
+                        // console.log('admin', allOrders)
                         res.send(allOrders)
                     })
 
@@ -110,15 +108,34 @@ client.connect(err => {
         const email = req.body.email;
 
         adminsCollection.find({ email })
-            .toArray((err, admins) => {
-                res.send(admins.length > 0)
+            .toArray((err, admin) => {
+                res.send(admin.length > 0)
                 // console.log(admins.length > 0)
             })
     })
 
+    // API for adding a new admin email
+    app.post('/makeAdmin', (req, res) => {
 
+        const email = (req.headers.email);
 
+        adminsCollection.insertOne({ email })
+            .then(result => {
+                res.send(result.insertedCount > 0)
+            })
+    })
 
+    // API for adding review by users
+    app.post('/addReview', (req, res) => {
+
+        const newReview = req.body;
+        console.log(newReview)
+
+        reviewsCollection.insertOne(newReview)
+            .then(result => {
+                res.send(result.insertedCount > 0);
+            })
+    })
 
     //   client.close();
 });
