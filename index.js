@@ -71,16 +71,50 @@ client.connect(err => {
     app.post('/placeOrder', (req, res) => {
 
         const orderedService = loadRequestedData(req);
-        console.log(orderedService)
+        // console.log(orderedService)
         ordersCollection.insertOne(orderedService)
             .then(result => {
                 res.send(result.insertedCount > 0);
             })
     })
 
+    // API for getting services list by email
+    app.post('/ordersByEmail', (req, res) => {
+        // const date = req.body.date;
+        const email = req.body.email;
 
+        adminsCollection.find({ email })
+            .toArray((err, admins) => {
+                // const filter = { date }
+                if (admins.length === 0) {
+                    // If admin email is not found,
+                    // find the orderscollections matching only loggedInUser email
+                    ordersCollection.find({ email })
+                        .toArray((err, myOrders) => {
+                            console.log('user', myOrders)
+                            res.send(myOrders)
+                        })
+                }
+                // If admin email is found, load all orders collection
+                ordersCollection.find({})
+                    .toArray((err, allOrders) => {
+                        console.log('admin', allOrders)
+                        res.send(allOrders)
+                    })
 
+            })
+    })
 
+    // API for checking if an user is admin or not
+    app.post('/isAdmin', (req, res) => {
+        const email = req.body.email;
+
+        adminsCollection.find({ email })
+            .toArray((err, admins) => {
+                res.send(admins.length > 0)
+                // console.log(admins.length > 0)
+            })
+    })
 
 
 
