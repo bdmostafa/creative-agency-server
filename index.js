@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const uploadFile = require('express-fileupload');
 require('dotenv').config();
+const { ObjectID } = require('mongodb');
 
 const port = 4200;
 
@@ -129,13 +130,38 @@ client.connect(err => {
     app.post('/addReview', (req, res) => {
 
         const newReview = req.body;
-        console.log(newReview)
+        // console.log(newReview)
 
         reviewsCollection.insertOne(newReview)
             .then(result => {
                 res.send(result.insertedCount > 0);
             })
     })
+
+    // API for getting clients all reviews
+    app.get('/reviews', (req, res) => {
+        reviewsCollection.find({})
+            .toArray((err, reviews) => {
+                // console.log(err, reviews)
+                res.send(reviews);
+            })
+    })
+
+  // API for update status of an order
+  app.patch('/updateStatus/', (req, res) => {
+
+    console.log(req.headers.id);
+
+    ordersCollection.updateOne({_id: req.headers.id}, {
+      $set: {status: req.body.status}
+    })
+    .then(result => {
+console.log(result.modifiedCount > 0)
+      res.send(result.modifiedCount > 0)
+    })
+  })
+
+
 
     //   client.close();
 });
