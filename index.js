@@ -146,23 +146,16 @@ client.connect(err => {
             })
     })
 
-  // API for update status of an order
-  app.patch('/updateStatus/', (req, res) => {
+    // API for update status of an order
+    app.patch('/updateStatus/', (req, res) => {
 
-    console.log(req.headers.id);
-
-    ordersCollection.updateOne({_id: req.headers.id}, {
-      $set: {status: req.body.status}
+        ordersCollection.updateOne({ _id: req.headers.id }, {
+            $set: { status: req.body.status }
+        })
+            .then(result => {
+                res.send(result.modifiedCount > 0)
+            })
     })
-    .then(result => {
-console.log(result.modifiedCount > 0)
-      res.send(result.modifiedCount > 0)
-    })
-  })
-
-
-
-    //   client.close();
 });
 
 
@@ -171,8 +164,7 @@ app.get('/', (req, res) => {
     res.send('Hello Creative Agency!')
 })
 
-// app.listen(process.env.PORT || port)
-app.listen(port)
+app.listen(process.env.PORT || port);
 
 
 
