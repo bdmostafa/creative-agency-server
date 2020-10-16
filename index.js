@@ -26,12 +26,15 @@ const client = new MongoClient(
 );
 
 client.connect(err => {
+
     const servicesCollection = client.db(process.env.DB_NAME).collection(process.env.DB_COLLECTION_SERVICES);
     const ordersCollection = client.db(process.env.DB_NAME).collection(process.env.DB_COLLECTION_ORDERS);
     const reviewsCollection = client.db(process.env.DB_NAME).collection(process.env.DB_COLLECTION_REVIEWS);
     const adminsCollection = client.db(process.env.DB_NAME).collection(process.env.DB_COLLECTION_ADMINS);
 
+    // Function to process request data with file system
     const loadRequestedData = (req) => {
+
         const file = req.files.file;
         const newImg = file.data;
         const encodedImg = newImg.toString('base64');
@@ -61,26 +64,27 @@ client.connect(err => {
 
     // API for getting all available services
     app.get('/services', (req, res) => {
+
         servicesCollection.find({})
             .toArray((err, services) => {
-                // console.log(err, services)
                 res.send(services);
             })
     })
 
-    // This API is used for placing order a service by users
+    // API for placing order a service by users
     app.post('/placeOrder', (req, res) => {
 
         const orderedService = loadRequestedData(req);
-        // console.log(orderedService)
+
         ordersCollection.insertOne(orderedService)
             .then(result => {
                 res.send(result.insertedCount > 0);
             })
     })
 
-    // API for getting services list by email
+    // API for getting services list by email both admin or user
     app.post('/ordersListByEmail', (req, res) => {
+
         const email = req.body.email;
 
         adminsCollection.find({ email })
@@ -90,22 +94,20 @@ client.connect(err => {
                     // find the orderscollections matching only loggedInUser email
                     ordersCollection.find({ email })
                         .toArray((err, myOrders) => {
-                            // console.log('user', myOrders)
                             res.send(myOrders)
                         })
                 }
                 // If admin email is found, load all orders collection
                 ordersCollection.find({})
                     .toArray((err, allOrders) => {
-                        // console.log('admin', allOrders)
                         res.send(allOrders)
                     })
-
             })
     })
 
     // API for checking if an user is admin or not
     app.get('/isAdmin', (req, res) => {
+
         const email = req.headers.email;
 
         adminsCollection.find({ email })
@@ -125,11 +127,10 @@ client.connect(err => {
             })
     })
 
-    // API for adding review by users
+    // API for adding a review by users
     app.post('/addReview', (req, res) => {
 
         const newReview = req.body;
-        // console.log(newReview)
 
         reviewsCollection.insertOne(newReview)
             .then(result => {
@@ -137,8 +138,9 @@ client.connect(err => {
             })
     })
 
-    // API for getting clients all reviews
+    // API for getting all reviews of customers/users
     app.get('/reviews', (req, res) => {
+
         reviewsCollection.find({})
             .toArray((err, reviews) => {
                 // console.log(err, reviews)
@@ -146,8 +148,8 @@ client.connect(err => {
             })
     })
 
-    // API for update status of an order
-    app.patch('/updateStatus/', (req, res) => {
+    // API for updating status of an order by admin
+    app.patch('/updateStatus', (req, res) => {
 
         ordersCollection.updateOne({ _id: req.headers.id }, {
             $set: { status: req.body.status }
@@ -157,8 +159,6 @@ client.connect(err => {
             })
     })
 });
-
-
 
 app.get('/', (req, res) => {
     res.send('Hello Creative Agency!')
