@@ -105,13 +105,12 @@ client.connect(err => {
     })
 
     // API for checking if an user is admin or not
-    app.post('/isAdmin', (req, res) => {
-        const email = req.body.email;
+    app.get('/isAdmin', (req, res) => {
+        const email = req.headers.email;
 
         adminsCollection.find({ email })
             .toArray((err, admin) => {
                 res.send(admin.length > 0)
-                // console.log(admins.length > 0)
             })
     })
 
